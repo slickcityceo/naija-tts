@@ -65,4 +65,112 @@
       <label for="language">Select Language/Dialect:</label>
       <select id="language" name="language">
         <option value="hausa">Hausa</option>
-        <option value
+        <option value="igbo">Igbo</option>
+        <option value="yoruba">Yoruba</option>
+        <option value="pidgin">Pidgin English</option>
+        <option value="nigerian_english">Nigerian English</option>
+      </select>
+
+      <label for="textInput">Enter Text to Train:</label>
+      <textarea id="textInput" name="textInput" rows="5" placeholder="Type or paste text here..."></textarea>
+
+      <label for="accent">Select Accent:</label>
+      <select id="accent" name="accent">
+        <option value="northern">Northern Nigeria</option>
+        <option value="southern">Southern Nigeria</option>
+        <option value="western">Western Nigeria</option>
+        <option value="general">General Nigerian Accent</option>
+      </select>
+
+      <label for="uploadAudio">Upload Audio Sample (Optional):</label>
+      <input type="file" id="uploadAudio" name="uploadAudio" accept="audio/*">
+
+      <button type="submit">Train Model</button>
+    </form>
+
+    <div class="audio-preview">
+      <h3>Generated Speech Preview:</h3>
+      <audio id="audioPreview" controls></audio>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <script>
+    document.getElementById('ttsForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const language = document.getElementById('language').value;
+      const textInput = document.getElementById('textInput').value;
+      const accent = document.getElementById('accent').value;
+      const uploadAudio = document.getElementById('uploadAudio').files[0];
+
+      if (!textInput.trim()) {
+        document.getElementById('feedback').textContent = 'Please enter some text to train the model.';
+        return;
+      }
+
+      // Simulate model training process
+      document.getElementById('feedback').textContent = 'Training the model with your data...';
+
+      setTimeout(() => {
+        // Generate synthetic speech using browser's Web Speech API
+        const utterance = new SpeechSynthesisUtterance(textInput);
+        utterance.lang = getLanguageCode(language); // Set appropriate language code
+
+        // Play the generated speech
+        speechSynthesis.speak(utterance);
+
+        // Simulate audio preview by creating a temporary audio file
+        const audioBlob = generateFakeAudioBlob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        document.getElementById('audioPreview').src = audioUrl;
+
+        document.getElementById('feedback').textContent = 'Model trained successfully! Listen to the preview above.';
+      }, 2000); // Simulated delay for training
+    });
+
+    function getLanguageCode(language) {
+      switch (language) {
+        case 'hausa':
+          return 'ha-NG';
+        case 'igbo':
+          return 'ig-NG';
+        case 'yoruba':
+          return 'yo-NG';
+        case 'pidgin':
+          return 'en-NG'; // Pidgin English is often treated as a variant of English
+        case 'nigerian_english':
+          return 'en-NG';
+        default:
+          return 'en-US'; // Fallback
+      }
+    }
+
+    function generateFakeAudioBlob() {
+      const context = new AudioContext();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      oscillator.frequency.setValueAtTime(440, context.currentTime); // A4 note
+      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 2);
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 2);
+
+      const buffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const blob = new Blob([data], { type: 'audio/wav' });
+      return blob;
+    }
+  </script>
+</body>
+</html>
